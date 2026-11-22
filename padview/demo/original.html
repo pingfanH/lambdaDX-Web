@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN" data-standalone-demo>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Padview WASM · 原始预览器</title>
+  <link rel="stylesheet" href="../layout.css" data-padview-layout-css>
+  <link rel="stylesheet" href="./demo.css">
+</head>
+<body data-example="original"><main>
+  <nav class="demo-nav" aria-label="示例导航"><a href="./index.html">全部示例</a><a href="./original.html" aria-current="page">原始预览器</a><a href="./transparent.html">透明盘面</a><a href="./components.html">信息组件总览</a><a href="./center.html">原版中心组件总览</a><a href="./labels.html">中心字母与数字</a><a href="./cover.html">封面背景</a><a href="./pv.html">PV 背景</a><a href="./player.html">Player 手动试玩</a><a href="./api.html">API 文档</a></nav>
+  <p class="eyebrow">PADVIEW / VIEWER</p><h1>原始预览器</h1>
+  <p>直接播放 Jack-the-Ripper◆，或从本机加载自己的谱面。选择单曲文件夹可以一起载入音乐、封面和 PV。</p>
+  <div class="workbench"><section aria-label="谱面预览">
+  <fieldset id="imports" disabled aria-label="本地谱面">
+    <button id="load-simai" type="button">加载 Simai</button>
+    <input id="simai-file" type="file" accept=".txt,.simai" hidden>
+    <button id="load-folder" type="button">加载文件夹</button>
+    <input id="song-folder" type="file" webkitdirectory multiple hidden>
+    <label id="difficulty-label" hidden>难度 <select id="difficulty"></select></label>
+  </fieldset>
+  <label class="aspect-control">画布比例 <select id="aspect"><option>1:1</option><option selected>4:3</option><option>16:9</option></select></label>
+<audio id="music" preload="auto"></audio>
+  <div id="stage" class="padview-surface"></div>
+  <fieldset id="controls" disabled>
+    <button id="play" type="button">播放</button>
+    <label>谱面位置 <input id="seek" type="range" min="-2" max="14" step="any" value="-2"></label>
+    <output id="time" for="seek">-2.00 s</output>
+  </fieldset>
+  <p id="notice" role="status">正在加载示例谱面和引擎…</p>
+  </section>
+  <aside id="review-sidebar"><h2>背景与接入示例</h2>
+  <fieldset id="background" disabled>
+    <label>封面 <input id="cover" type="file" accept="image/png,image/jpeg"></label>
+    <label>PV <input id="video" type="file" accept="video/*"></label>
+    <button id="clear" type="button">移除 PV</button>
+  </fieldset>
+  <p>在「播放器设置 → 画布背景」指定用封面还是 PV，以及如何铺满或平铺整个预览框。</p>
+  <details><summary>查看调用示例</summary>
+    <pre><code>const view = mountPadview(stage);
+await view.ready;
+view.load(JSON.parse(chartJson), { chartJson });
+view.setTime(2.5, { seek: true });
+view.cover = coverInput;
+view.video = videoInput;
+view.configure({patch: {
+  'params.canvas_background.source': 'cover',
+  'params.canvas_background.layout': 'tile',
+}});</code></pre>
+    <p>宿主提供谱面秒数。有音乐时，本例使用音乐元素的 currentTime 减去谱面 audio_offset；没有音乐时，使用浏览器时钟。<a href="./jack-the-ripper/maidata.txt">查看示例 Simai</a>。</p>
+  </details></aside>
+</div>
+</main>
+<script type="module" src="./original.js"></script>
+</body></html>

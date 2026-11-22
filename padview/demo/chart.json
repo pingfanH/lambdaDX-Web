@@ -1,0 +1,138 @@
+{
+  "version": "0.3.0-measure",
+  "title": "Padview practice",
+  "artist": "",
+  "bpm": 120,
+  "bpms": [
+    {
+      "measure": 1,
+      "bpm": 120
+    }
+  ],
+  "audio_offset": 0,
+  "notes": [
+    {
+      "id": 1,
+      "time": 1,
+      "lane": 1,
+      "note_type": "tap",
+      "slide": []
+    },
+    {
+      "id": 2,
+      "time": 1.25,
+      "lane": 2,
+      "note_type": "tap",
+      "slide": []
+    },
+    {
+      "id": 3,
+      "time": 1.5,
+      "lane": 3,
+      "note_type": "tap",
+      "slide": []
+    },
+    {
+      "id": 4,
+      "time": 1.75,
+      "lane": 4,
+      "note_type": "tap",
+      "is_break": true,
+      "slide": []
+    },
+    {
+      "id": 5,
+      "time": 2,
+      "lane": 5,
+      "note_type": "hold",
+      "hold_duration": 0.5,
+      "slide": []
+    },
+    {
+      "id": 6,
+      "time": 2.75,
+      "lane": 17,
+      "note_type": "touch",
+      "slide": []
+    },
+    {
+      "id": 7,
+      "time": 3,
+      "lane": 6,
+      "note_type": "slide",
+      "slide": [
+        {
+          "slide_duration": 1,
+          "slide_start_delay": 0.25,
+          "segments": [
+            {
+              "shape": "p",
+              "points": [
+                {
+                  "zone": "A2",
+                  "beat_offset": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "time": 4.25,
+      "lane": 17,
+      "note_type": "touch_hold",
+      "hold_duration": 0.5,
+      "slide": []
+    },
+    {
+      "id": 9,
+      "time": 5,
+      "lane": 1,
+      "note_type": "tap",
+      "is_each": true,
+      "slide": []
+    },
+    {
+      "id": 10,
+      "time": 5,
+      "lane": 8,
+      "note_type": "tap",
+      "is_each": true,
+      "slide": []
+    },
+    {
+      "id": 11,
+      "time": 5.5,
+      "lane": 2,
+      "note_type": "slide",
+      "slide": [
+        {
+          "slide_duration": 1,
+          "slide_start_delay": 0.25,
+          "segments": [
+            {
+              "shape": "line",
+              "points": [
+                {
+                  "zone": "A6",
+                  "beat_offset": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "time": 6.75,
+      "lane": 7,
+      "note_type": "tap",
+      "is_ex": true,
+      "slide": []
+    }
+  ],
+  "simai_level": 6
+}

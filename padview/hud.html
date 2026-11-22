@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Padview · 透明信息层</title>
+  <style>html,body{margin:0;height:100%;background:transparent}</style>
+</head>
+<body>
+  <script src="hud.js?v=e65db7d9-3e2bb3cb"></script>
+  <script>
+    const hud = PadviewHud.create(document.body);
+    const receive = m => {
+      if (m?.type === 'padview:hud-layout') hud.layout(m.settings);
+      else if (m?.type === 'padview:state' && Array.isArray(m.blocks)) hud.update(m);
+      else if (m?.type === 'padview:clear') hud.clear();
+    };
+    addEventListener('message', e => {
+      if (e.origin === location.origin && (e.source === parent || e.source === opener)) receive(e.data);
+    });
+    const request = {type:'padview:get-state'};
+    if (parent !== window) parent.postMessage(request,location.origin);
+    else if (opener) opener.postMessage(request,location.origin);
+    const name = new URLSearchParams(location.search).get('hud') ?? 'stage';
+    if (name && typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('padview.hud.'+name);
+      channel.onmessage = e => receive(e.data);
+      channel.postMessage(request);
+      addEventListener('pagehide', e => { if (!e.persisted) channel.close(); });
+      addEventListener('pageshow', e => { if (e.persisted) channel.postMessage(request); });
+    }
+  </script>
+</body>
+</html>

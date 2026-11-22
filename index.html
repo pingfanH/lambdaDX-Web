@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LambdaDX Web SDK</title>
+<style>
+  :root{color-scheme:dark;font:16px/1.6 system-ui;background:#090909;color:#eee}
+  body{max-width:48rem;margin:4vh auto;padding:0 1rem}h1{line-height:1.1}
+  nav{display:flex;gap:.6rem 1.2rem;flex-wrap:wrap;margin:1rem 0}a{color:inherit}
+  #stage{background:#111;border:1px solid #444}#status{min-height:1.6em}
+</style>
+<h1>LambdaDX Web SDK</h1>
+<p>这个页面用对象接口挂载 Viewer，载入本地练习谱，并停在第 2 秒。打开完整示例可以播放、导入谱面或切换设置。</p>
+<nav aria-label="开发者入口">
+  <a href="./padview/demo/original.html">播放与导入</a><a href="./padview/demo/player.html">手动试玩</a>
+  <a href="./padview/demo/index.html">八个示例</a><a href="./padview/demo/api.html">API 参考</a>
+  <a href="./README.md">部署说明</a>
+</nav>
+<div id="stage"></div><p id="status" role="status">正在载入练习谱…</p>
+<script type="module">
+  import {mountPadview} from './padview/embed.js';
+  const stage = document.querySelector('#stage'), status = document.querySelector('#status');
+  stage.addEventListener('padview-message', ({detail}) => {
+    if (detail.type === 'padview:state' && detail.title)
+      status.textContent = detail.title + ' · ' + detail.time.toFixed(2) + ' s';
+    if (detail.type === 'padview:error') status.textContent = detail.message;
+  });
+  try {
+    const view = mountPadview(stage, {assetPack: 'viewer', sharedConfig: false});
+    const response = await fetch('./padview/demo/chart.json');
+    if (!response.ok) throw Error('读取谱面失败：HTTP ' + response.status);
+    const chartJson = await response.text();
+    await view.ready;
+    view.load(JSON.parse(chartJson), {chartJson});
+    view.setTime(2, {seek: true});
+    view.requestState();
+  } catch (error) {
+    status.textContent = error.message;
+  }
+</script>
+</html>

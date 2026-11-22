@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Padview 示例</title><link rel="stylesheet" href="./demo.css">
+</head><body><main class="catalog">
+  <header class="masthead"><strong>lambdaDX <span>/</span> Padview</strong><nav aria-label="文档"><a href="./README.md">示例说明</a> · <a href="./api.html">API 文档 ↗</a></nav></header>
+  <section class="catalog-intro" aria-labelledby="gallery-title">
+    <div><p class="eyebrow">PADVIEW / DEMOS</p><h1 id="gallery-title">谱面预览室</h1>
+    <p>从完整播放器到单个读数，使用同一首 Jack-the-Ripper◆ 对照七种 Viewer 预览和一个可手动试玩的 Player。</p></div>
+    <svg class="dial" aria-hidden="true" focusable="false" viewBox="0 0 320 200" fill="none">
+      <defs><g id="key"><path d="M136 28 Q160 20 184 28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M160 18v4" stroke="currentColor"/></g></defs>
+      <g stroke="currentColor" opacity=".28"><path d="M12 100h296M160 4v192" stroke-dasharray="2 6"/><circle cx="160" cy="100" r="88"/><circle cx="160" cy="100" r="64"/><circle cx="160" cy="100" r="30" stroke-dasharray="1 5"/></g>
+      <g><use href="#key"/><use href="#key" transform="rotate(45 160 100)"/><use href="#key" transform="rotate(90 160 100)"/><use href="#key" transform="rotate(135 160 100)"/><use href="#key" transform="rotate(180 160 100)"/><use href="#key" transform="rotate(225 160 100)"/><use href="#key" transform="rotate(270 160 100)"/><use href="#key" transform="rotate(315 160 100)"/></g>
+      <path d="M133 127l49-49" stroke="currentColor" stroke-dasharray="3 4"/><g stroke="currentColor" stroke-width="2"><circle cx="131" cy="129" r="6"/><circle cx="187" cy="73" r="7"/></g>
+    </svg>
+  </section>
+  <div class="catalog-heading"><h2>选择示例</h2><span>01 — 08</span></div>
+  <nav class="demo-grid" aria-label="选择示例">
+    <a href="./original.html"><small>01 / VIEWER</small><h2>原始预览器</h2><p>播放示例曲或导入本地单曲，使用完整的播放器设置。</p></a>
+    <a href="./transparent.html"><small>02 / VIEWER</small><h2>透明盘面</h2><p>在棋盘、深色和浅色底板上观察击打特效。</p></a>
+    <a href="./components.html"><small>03 / VIEWER</small><h2>信息组件总览</h2><p>对照曲名、达成率、DX 分数、谱面秒数、BPM 和 Simai。</p></a>
+    <a href="./center.html"><small>04 / VIEWER</small><h2>原版中心组件总览</h2><p>查看连击、生命值、分数和各类差值的原版读数。</p></a>
+    <a href="./labels.html"><small>05 / VIEWER</small><h2>中心字母与数字</h2><p>分别控制 COMBO 的标题贴图与数值。</p></a>
+    <a href="./cover.html"><small>06 / VIEWER</small><h2>封面背景</h2><p>对比封面的铺满、完整显示与平铺方式。</p></a>
+    <a href="./pv.html"><small>07 / VIEWER</small><h2>PV 背景</h2><p>播放或拖动谱面，查看视频背景与音乐的同步。</p></a>
+    <a href="./player.html"><small>08 / PLAYER</small><h2>Player 手动试玩</h2><p>使用完整资源包，打开手动判定、保存设置或管理配置模板。</p></a>
+  </nav>
+  <footer>示例读取服务器保存的配置。Viewer 设置仅在当前页生效。</footer>
+</main></body></html>

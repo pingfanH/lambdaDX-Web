@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta name="padview-build" content="e65db7d9">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>LambdaDX Padview</title>
+  <link rel="stylesheet" href="layout.css?v=e65db7d9-80c36711">
+  <style>
+    html,body{margin:0;background:#080808;color:#f3f1ec;font:14px system-ui,sans-serif}
+    body{--padview-size:100svh}
+    #glcanvas{display:block;width:100%;height:100%;outline:0}
+    #status{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;pointer-events:none}
+    #status[hidden]{display:none}
+  </style>
+</head>
+<body data-padview-layout="overlay">
+  <script>if((new URLSearchParams(location.search).get('transparent') ?? '1')!=='1')document.body.dataset.padviewLayout='flow';</script>
+  <div class="padview-board">
+  <canvas id="glcanvas" style="visibility:hidden" tabindex="0" aria-label="谱面预览；使用 1 至 8 和 T 中心键，或触摸圆盘"></canvas>
+  <div id="status" role="status">正在准备预览…</div>
+  </div>
+  <section class="padview-info" aria-label="谱面信息"></section>
+  <script src="mq_js_bundle.js?v=e65db7d9-f5cac96c"></script>
+  <script src="audio.js?v=e65db7d9-2f52cbdd"></script>
+  <script src="assets.js?v=e65db7d9-3c970deb"></script>
+  <script src="profiles.js?v=e65db7d9-b75a8e95"></script>
+  <script src="hud-editor.js?v=e65db7d9-739e2575"></script>
+  <script src="hud.js?v=e65db7d9-3e2bb3cb"></script>
+  <script src="media.js?v=e65db7d9-22eac8f3"></script>
+  <script src="padview.js?v=e65db7d9-774588a8"></script>
+</body>
+</html>

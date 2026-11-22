@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Padview 网页 API 参考 · lambdaDX</title><link rel="stylesheet" href="./demo.css"><script src="./api-catalogue.js" defer></script></head>
+<body><main class="api-doc">
+<header class="masthead"><strong>lambdaDX <span>/</span> Padview</strong><nav><a href="./index.html">全部示例</a> · <a href="./README.md">接入指南</a></nav></header>
+<p class="eyebrow">PADVIEW / API REFERENCE</p><h1>网页 API 参考</h1>
+<p>把谱面嵌入自己的页面：从第一次挂载，到同步音乐、接收分数、编辑设置和分享试玩。阅读本页无需下载 WASM 或素材包。</p>
+<div class="api-grid"><nav aria-label="文档目录"><a href="#start">01　快速接入</a><a href="#mount">02　挂载与资源</a><a href="#controller">03　控制器</a><a href="#source">04　谱面与媒体</a><a href="#clock">05　播放与时钟</a><a href="#messages">06　消息与状态</a><a href="#hud">07　HUD 与组件</a><a href="#settings">08　设置字典</a><a href="#http">09　HTTP 接口</a><a href="#hosts">10　宿主与诊断</a></nav>
+<article>
+<section id="start"><h2>01　挂载第一张谱面</h2>
+<p>把这段 HTML 保存到提供 <code>/padview/</code> 静态资源的同源网站上。它会显示一张暂停在第 2 秒的谱面。要播放音乐，接着看<a href="#clock">宿主时钟</a>。完整例子：<a href="./original.html">Viewer 预览</a>、<a href="./player.html">Player 手动试玩</a>。</p>
+<pre><code>&lt;div id="stage" style="width:100%;aspect-ratio:4/3"&gt;&lt;/div&gt;
+&lt;script type="module"&gt;
+import { mountPadview } from '/padview/embed.js';
+const stage = document.querySelector('#stage');
+const view = mountPadview(stage);
+stage.addEventListener('padview-message', ({detail: m}) =&gt; {
+  if (m.type === 'padview:error') console.error(m.message);
+});
+await view.ready;
+const res = await fetch('/padview/demo/chart.json');
+if (!res.ok) throw Error('读取谱面失败：' + res.status);
+const chartJson = await res.text();
+view.load(JSON.parse(chartJson), {chartJson});
+view.setTime(2, {seek: true});
+&lt;/script&gt;</code></pre></section>
+<section id="mount"><h2>02　挂载、资源包与多盘面</h2>
+<p><code>mountPadview(element, options?) → PadviewController</code> 同步返回控制器，也可通过 <code>element.padview</code> 取得。每份文档挂一个主盘面；对比盘面共享 WASM、WebGL 和素材，独立载谱、进度和输出。声音和手动判定只属于主盘面。宿主 CSS 决定显示尺寸；盘面保持正方形，示例容器默认 4:3，可选 1:1 或 16:9。</p>
+<dl><dt>assetPack</dt><dd><code>'viewer'</code>（默认）：自动预览、默认击打音和 HUD，使用较小的 <code>assets-viewer.tar.br</code>。<code>'player'</code>：完整游玩、手动判定和素材。第三方 SDK 使用默认音色和系统字体，音符皮肤和外框可按需加载。可用资源见 <a href="../options.json">可选包清单</a>。同页不能热换基础包，请重新打开页面。</dd>
+<dt>comparison</dt><dd>默认 false；对比盘面传 true，使用主盘面的引擎和资源包。</dd>
+<dt>transparent / blocksContainer</dt><dd>主布局默认透明叠加（URL <code>transparent=0</code> 改为分区）。传 <code>blocksContainer: HTMLElement</code> 把只读 HTML 信息放到指定容器，默认 null。</dd>
+<dt>hudChannel</dt><dd>主盘面取 URL 的 hud，默认 <code>'stage'</code>；对比盘面默认空字符串。显式传空字符串可关闭频道。见<a href="#hud">独立 HUD</a>。</dd>
+<dt>sharedConfig / defaultProfile</dt><dd>是否从同源配置服务读写。SDK 默认 Viewer 为 false、Player 为 true。<code>'read-only'</code> 可读取服务器配置、套用模板，本页编辑不写回。<code>defaultProfile: async () =&gt; ({presentation, playable})</code> 提供后备配置，也可返回 null。七个 Viewer 示例都显式选只读。</dd>
+<dt>snapshot / fetcher / defaultNoCore</dt><dd>主盘面选项。snapshot 默认空字符串，可给资源请求附加快照标记；fetcher 默认 fetch，可定制引擎资源读取；defaultNoCore 默认 false，未提供谱面配置时可让后备配置选择 NoCore 自动演奏。它与资源包、是否开启手动输入是三个独立选项。</dd></dl>
+<pre><code>const main = mountPadview(stage);
+const peer = mountPadview(otherStage, {comparison: true});
+await Promise.all([main.ready, peer.ready]);
+// 各自 load；要同步进度，对每个控制器调用 setTime。
+peer.dispose(); main.dispose();</code></pre></section>
+<section id="controller"><h2>03　控制器成员与兼容命令</h2>
+<p>除 ready 外，发送指令的方法返回 void。结果通过容器的 <code>padview-message</code> 事件返回。下列 <code>padview:…</code> 名称可用在 <code>send({type, ...字段})</code> 或同源 iframe。</p>
+<dl>
+<dt>ready</dt><dd>Promise 成功值含 <code>capabilities.{playable,htmlHud,backgroundMedia}</code> 和 <code>build.id</code>。表示可以接收谱面；不是谱面已经画出。启动失败或提前 dispose 会拒绝。</dd>
+<dt>load(chart, options?) · padview:load</dt><dd>加载含 notes 数组的 ChartDoc。可选 chartJson、presentation、viewerProfile、cover、video。chartJson 是原始 JSON 字符串，可避免 64 位音符 ID 被 JS 舍入。presentation 是谱面配置；viewerProfile 是当前会话的显示覆盖，主盘面已有统一配置时不优先。每次 load 会清除未传的封面和 PV。</dd>
+<dt>cover / video · padview:cover / padview:video</dt><dd>可读写属性，读回最后传入的来源，赋 null 移除。消息使用 <code>{type, source}</code>。不需要重新载谱。</dd>
+<dt>parseSource({request, name, source, diff?}) · padview:parse-source</dt><dd>解析 UTF-8 谱面文本，结果按 request 匹配；不会自动载谱。见<a href="#source">解析示例</a>。</dd>
+<dt>setTime(time, options?) · padview:time</dt><dd>设置谱面秒数和播放状态；省略选项即暂停。原始消息须明确传布尔值 playing。</dd>
+<dt>setPlayable(playable) · padview:playable</dt><dd>传 true 请求手动判定。检查 ready.capabilities.playable 和实际的 input-mode 事件。兼容旧命令 <code>padview:mode</code>，其 autoplay 布尔值含义相反。</dd>
+<dt>requestState() · padview:get-state</dt><dd>重发已有的 HUD 布局和最新状态；新盘面还没有状态时不会制造默认读数。</dd>
+<dt>requestSettings() · padview:get-settings</dt><dd>请求当前 presentation、defaults 和完整 catalogue；建议先 await ready。</dd>
+<dt>configure(options) · padview:configure</dt><dd>四选一：<code>{patch:{'params.music_volume':0.6}}</code> 增量修改；<code>{presentation}</code> 整体替换；<code>{reset:true}</code> 恢复默认；<code>{restoreChart:true}</code> 恢复谱面配置。引擎验证类型与范围，必要时异步下载素材。通过 settings / settings-error 确认结果。</dd>
+<dt>saveSettings() · padview:save-settings</dt><dd>将当前配置同步到后端；主盘面开启可写同步时，载谱后的设置更改也会自动保存。</dd>
+<dt>openTemplates() · padview:templates</dt><dd>打开主盘面配置模板面板；可写时能管理整套或增量模板，只读时能套用模板。未启用 sharedConfig 时没有模板面板。</dd>
+<dt>editInfo() · padview:edit-info</dt><dd>进入主盘面的信息编辑：选择、拖动组件，右键添加，在气泡中编辑位置、样式、模板。独立只读信息网格不提供盘面拖放。</dd>
+<dt>audio / startup</dt><dd>主盘面声音控制见<a href="#clock">播放</a>；启动各阶段的耗时见<a href="#hosts">诊断</a>。两者在初始化早期可能不可用。</dd>
+<dt>send(message) / dispose()</dt><dd>send 是上述对象接口的消息兼容入口。dispose 释放该盘面的观察器、媒体、DOM 与订阅并移除 element.padview；宿主还应停止自己的时钟和音乐。已销毁的旧控制器不再接收命令。</dd></dl></section>
+<section id="source"><h2>04　Simai、ChartDoc、音乐和背景</h2>
+<p>直接传原生 ChartDoc，或用下例解析 Simai（name 以 .txt 结尾）、maichart JSON、原生 JSON。选择 .simai 文件时把解析名设为 maidata.txt。request 是 1～4294967295 的整数；diff 取自上次返回的 levels，未指定时选最高可用难度。文本上限 32 MiB，最多 200,000 个音符。</p>
+<pre><code>stage.addEventListener('padview-message', ({detail: m}) =&gt; {
+  if (m.type !== 'padview:parsed-chart' || m.request !== 1) return;
+  if (m.error) { console.error(m.error); return; }
+  const {chart_json, levels, selected_diff} = m.parsed;
+  console.log(levels, selected_diff); // levels: [{diff, label}]
+  view.load(JSON.parse(chart_json), {chartJson: chart_json});
+});
+view.parseSource({request: 1, name: 'maidata.txt', source: await file.text()});</code></pre>
+<p>背景来源支持 URL 字符串、URL 对象、File / Blob、ArrayBuffer、TypedArray / DataView、文件 input，封面还接受 img，PV 接受 video。DOM 元素仅适用于直接挂载；iframe 传可克隆的数据或 URL 字符串。封面上限 16 MiB，跨域读取需要来源允许。PV 静音并跟随谱面，背景音乐由宿主 audio 单独播放。</p>
+<pre><code>view.cover = coverInput;  // 取 input.files[0]
+view.video = videoFile;
+view.configure({patch: {
+  'params.canvas_background.source': 'video', // auto / cover / video / black
+  'params.canvas_background.layout': 'tile',  // off（仅盘内）/ fill / fit / tile
+  'params.canvas_background.tile_scale': 0.5
+}});</code></pre><p><a href="./cover.html">封面</a>、<a href="./pv.html">PV</a> 示例可试铺满、留边和平铺。浏览器文件夹选择不会上传；根目录中 maidata.txt 优先于 chart.json。可用 project_assets.json 的 audio、cover、pv 指定媒体相对路径。</p></section>
+<section id="clock"><h2>05　时钟、启动拍与声音</h2>
+<p><code>previewStartTime(chart, countIn=true)</code> 返回整谱起播的谱面秒数：参考开头 BPM 及预备拍内的变速；clock_count 缺省 4，最多 256。120 BPM、4 拍返回 −2，关闭或 0 拍返回 0。谱面 0 秒不随 audio_offset 移动。</p>
+<dl><dt>setTime(time, {playing, seek, rate, sentAt, clockSource, audioBoundary})</dt><dd>time 是谱面秒数；有音乐时为 <code>music.currentTime - (chart.audio_offset || 0)</code>。playing 表示实际播放；seek 在跳转/拖动时传 true；rate 是播放倍率；sentAt 是发送时刻的毫秒时间戳（performance.timeOrigin + performance.now()）；clockSource 选 media 或 silent；audioBoundary 是音效预排的截止谱面秒数，无边界传 null。启动拍结束交接媒体时可取 -audio_offset。</dd>
+<dt>audio.unlock(media?) / audio.pause() / audio.watchPlayback(media, active, interrupt)</dt><dd>在用户点击内解锁音效，可传宿主 HTMLAudioElement。pause 停止引擎音效；宿主另行暂停音乐。watchPlayback 监测宿主媒体中断，active 返回是否在播，interrupt 接收提示文字；返回取消监听函数。对比盘面没有独立音频。</dd></dl>
+<pre><code>// 已有 HTMLAudioElement music，谱面已就绪。完整启动拍逻辑见原始预览器源码。
+const time = () =&gt; music.currentTime - (chart.audio_offset || 0);
+let frame;
+function tick() {
+  view.setTime(time(), {playing: !music.paused, rate: music.playbackRate, clockSource: 'media'});
+  if (!music.paused) frame = requestAnimationFrame(tick);
+}
+playButton.onclick = async () =&gt; {
+  await view.audio?.unlock(music);
+  await music.play(); cancelAnimationFrame(frame); tick();
+};
+music.onpause = () =&gt; { cancelAnimationFrame(frame); view.audio?.pause(); view.setTime(time()); };
+music.onseeked = () =&gt; view.setTime(time(), {playing: !music.paused, seek: true});</code></pre>
+<p>没有音乐时由宿主用 performance.now() 推进谱面秒数并传 silent。单次 setTime 不会代替播放器时钟；页面隐藏、播放结束及销毁时停止宿主循环。<a href="./original.js">完整有声 / 静音交接与拖动示例</a>。</p></section>
+<section id="messages"><h2>06　接收消息和实时状态</h2>
+<p>同页挂载时在容器监听 <code>padview-message</code>，消息在 <code>event.detail</code>。已有独立 iframe 可继续使用同源 postMessage。先安装监听，再设置 iframe.src；核对来源与窗口，收到 ready 后载谱。</p>
+<pre><code>window.addEventListener('message', e =&gt; {
+  if (e.origin !== location.origin || e.source !== frame.contentWindow) return;
+  if (e.data?.type === 'padview:ready')
+    frame.contentWindow.postMessage({type:'padview:load', chart, chartJson}, location.origin);
+});
+frame.src = '/padview/index.html?transparent=1&amp;hud=stage';</code></pre>
+<dl><dt>padview:ready / padview:error</dt><dd>ready 含 capabilities（playable、htmlHud、backgroundMedia）和 build.id。error 的 message 描述引擎启动或运行错误。</dd>
+<dt>padview:settings-busy / padview:settings-idle</dt><dd>正在载谱或应用设置时暂停提交播放操作；idle 表示当前队列已处理完。出错时另有错误消息。</dd>
+<dt>padview:settings / padview:settings-error</dt><dd>设置消息提供 presentation、defaults、catalogue 和 busy；区分当前生效值、引擎默认值和可设字段。设置失败时读取 message。</dd>
+<dt>padview:settings-saved / padview:sync-status</dt><dd>配置已保存；同步状态文字在 message 中。</dd>
+<dt>padview:input-mode</dt><dd>playable 表示当前是否接受玩家输入；ready.capabilities.playable 表示是否具备这种能力。</dd>
+<dt>padview:parsed-chart / padview:media-error</dt><dd>解析结果带原 request 编号，成功时从 parsed 读 chart_json、levels、selected_diff，失败时读消息的 error。媒体失败则读 kind（cover 或 video）及 message。</dd>
+<dt>padview:hud-layout / padview:clear</dt><dd>settings 描述 HUD 布局。clear 时移除上一首的数值及布局。</dd>
+<dt>padview:state</dt><dd>播放状态：time（谱面秒数）、playing、noCore、title、artist、bpm；计分：dxScore、maxDxScore、achievement、combo、judged、total。center 是 {kind,label,value,size} 数组，subtitles 是 {text,opacity,position:[x,y],size,font} 数组；warnings 是字符串数组。blocks 按组件 index 返回 text、progress（数字或 null）及可选的 center。请按实际回报刷新 HTML；无需每帧轮询。</dd></dl>
+<pre><code>stage.addEventListener('padview-message', ({detail: m}) =&gt; {
+  if (m.type !== 'padview:state') return;
+  seconds.textContent = m.time.toFixed(2);
+  tempo.textContent = m.bpm;
+  score.textContent = m.dxScore + ' / ' + m.maxDxScore;
+});
+view.requestState();</code></pre></section>
+<section id="hud"><h2>07　信息组件、中心读数与独立 HUD</h2>
+<p><a href="./components.html">信息组件总览</a>展示可选中的 HTML 文字；<a href="./center.html">原版中心总览</a>和<a href="./labels.html">中心字样示例</a>展示原版字图。打开「播放器设置 → 编辑信息」后，可右键新增、拖动定位、在气泡中修改数值。总览用 blocksContainer 把所有读数移到旁栏。</p>
+<p><strong>SECONDS</strong> 显示谱面时间，默认保留两位小数。数值靠组件右对齐，启动拍结束、负号消失时小数点保持原位；标题仍使用组件的对齐设置。暂停停在原处，跳转后显示目标时间。任意文字模板也可用 <code>{seconds}</code>，例如 <code>当前：{seconds} 秒</code>。</p>
+<pre><code>// presentation 来自最近一次 padview:settings。blocks 数组按整体替换。
+const info = presentation.params.info_blocks;
+view.configure({patch: {
+  'params.info_blocks.enabled': true,
+  'params.info_blocks.blocks': [...info.blocks, {
+    kind:'seconds', label:'SECONDS', template:'{seconds} s',
+    position:[0.05, 0.15], width:0.2
+  }]
+}});</code></pre>
+<p><code>params.info_blocks</code> 包含 enabled、positioned、center_at_origin、edit、layout_version 和 blocks（最多 32 个）。每个组件可设 enabled、kind、label、text（自由文字）、template（其他类型的正文）、position（归一化 [x,y]）、width（占画布宽度的比例）、font_size、typeface、color（RGBA，各 0–255）和 align（0 左、1 中、2 右）。计数组件可设 progress_bar；达成率另有 target 和 achievement_mode。盘内中心组件用 center_source、center_digits、center_label（original / text / hidden）和 center_show_value 分别控制来源、数字、标题和数值显隐。</p>
+<div id="api-components"></div>
+<p>只显示 HUD：同源打开 <a href="../hud.html?hud=stage">hud.html?hud=stage</a>，宿主挂载时选同名 hudChannel。透明窗口经 <code>BroadcastChannel('padview.hud.' + name)</code> 接收布局、状态与清空消息；嵌入或打开它的同源窗口也可直接传这些消息。不同歌曲可选不同频道。</p></section>
+<section id="settings"><h2>08　设置字典</h2><p>按中文名称、分类或配置键搜索。可传入的枚举值区分数字与字符串；区间给出最小值、最大值和步长。完整的<a href="./api-catalogue.json">机器可读目录</a>由当前 Player 和 WASM 共用的 Rust 设置定义生成。要读实际默认值，调用 requestSettings；服务器保存的配置可能与引擎默认值不同。</p>
+<p>流速、判定、设计和声音使用原版设置。FiNALE 切换判定和计分，显示沿用 SDEZ。音符遮罩与感应区遮罩独立；辅助线越过判定环后可固定速度或跟随音符。开发者字段在设置面板末尾勾选后才显示；仅原生支持的选项不能在网页设置。可选皮肤和音色在切换时加载。</p>
+<label for="api-filter">查找设置</label> <input id="api-filter" type="search" placeholder="例如：流速、遮罩、brightness"> <output id="api-count" aria-live="polite">正在读取目录…</output><div id="api-fields"></div></section>
+<section id="http"><h2>09　HTTP 接口</h2>
+<dl><dt>GET /api/padview/config　·　lambdaDX / MaiRis</dt><dd>返回 {revision,profile,templates}。首次 profile 可为 null。配置为 {presentation,playable}；presentation 包含 params、note_speed、touch_speed、slide_fade_in。模板为 {name,kind,value}：full 保存整份配置，patch 保存按点分隔的设置键。静态文件部署无需此服务。</dd>
+<dt>PUT /api/padview/config　·　lambdaDX / MaiRis</dt><dd>发送 application/json，每次提交 {revision,profile} 或 {revision,templates}，成功返回新 revision。遇到 409 先重新 GET 再决定如何合并。最多 1 MiB、24 个模板，名称不重复且为 1–64 字符。错误包括无效数据 400、来源不符 403、过大 413、格式不支持 415。登录保护沿用宿主。</dd>
+<dt>GET /api/preview/directory?dir=…　·　lambdaDX</dt><dd>dir 指运行服务的电脑上的目录，须位于 LAMBDADX_PREVIEW_ROOT 内。返回 directory、name、filename、source，以及 audio、cover、video（均为 null 或 {name,size,url}）。请用 URLSearchParams 编码路径。</dd>
+<dt>GET / HEAD /api/preview/media/:session/:file　·　lambdaDX</dt><dd>使用目录接口给出的媒体 URL。会话有效期六小时；支持 Range 分段（206），无效范围返回 416。</dd>
+<dt>POST /api/shares　·　lambdaDX</dt><dd>发送 {version:1,chart,audio,presentation?}；audio 为 null 或 {name,wav_base64}。ChartDoc 最多 200,000 个音符，JSON 上限 180 MiB，WAV 上限 128 MiB。返回 201 {id,url}。分享原文要保留大整数音符 ID。</dd>
+<dt>GET /api/shares/:id；GET /api/shares/:id/audio　·　lambdaDX</dt><dd>读取已发布的 JSON 快照或可选 WAV。快照支持 ETag / 304；音频支持 Range。不存在的 ID 或音频返回 404。</dd>
+<dt>GET / HEAD /api/padview/assets/…　·　lambdaDX</dt><dd>静态入口 /padview/ 下的 WASM 与素材包按请求头选择传输编码；嵌入页用公开路径，由宿主处理压缩。资源版本见 <a href="../host.json">host.json</a>，此部署的可选资源见 <a href="../options.json">options.json</a>。</dd></dl>
+<pre><code>const config = await fetch('/api/padview/config').then(r =&gt; r.json());
+console.log(config.revision, config.templates.map(t =&gt; t.name));</code></pre></section>
+<section id="hosts"><h2>10　宿主、快捷键与耗时诊断</h2>
+<p>lambdaDX 的 <code>/preview?dir=…</code> 载入本地目录，<code>/player/:id</code> 打开分享试玩。MaiRis 的 <code>/runs/:run/?category=…&amp;case=…</code> 选择谱面，<code>compare=1&amp;with=…</code> 加入对比盘面。普通预览默认使用 Viewer；在预览页加 <code>assets=player</code> 获取手动判定能力。分享试玩和<a href="./player.html">独立 Player 示例</a>使用 Player。</p>
+<p>播放快捷键由宿主绑定。keyboard.js 导出 viewerShortcut(event)、keyboardOwnsInput(event)、bindViewerKeyboard({root,enabled,onAction})；后者返回解绑函数。空格播放/暂停，左右键跳 1 秒（Shift 跳 5 秒），Home / R 从头播放，Esc 暂停。文本输入、编辑弹窗等自行处理按键。</p>
+<p>复用设置界面可参考 <a href="../viewer-settings.js">ViewerSettings</a> 和<a href="./showcase.js">示例面板</a>。新建时传 frame、stop、changed 和 transport，attach / detach 管理盘面，载谱前 beforeLoad，message 接收引擎事件。自定义界面直接调用控制器的 requestSettings 和 configure 即可。</p>
+<p><code>view.startup</code> 提供 build、shared、status、readyMs（引擎能接谱）、totalMs（引擎启动结束或失败）、chartMs（从挂载到当前配置的首谱首帧）、phases[{phase,ms}] 以及 operations[{phase,startMs,ms}]。时间单位为毫秒，并发操作不能简单求和。用浏览器控制台和 Network 区分资源下载、解压、编译和首谱准备。</p>
+<pre><code>await view.ready;
+console.table(view.startup?.operations); // 载谱并出图后再读，可看到后续阶段</code></pre>
+<p><a href="../embed.d.ts">完整 TypeScript 签名</a> · <a href="./README.md">部署与示例说明</a> · <a href="./index.html">返回示例目录</a></p></section>
+</article></div></main></body></html>

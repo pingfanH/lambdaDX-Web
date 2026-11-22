@@ -1,0 +1,176 @@
+:root {
+  color-scheme: dark;
+  --base: #0b0b0b;
+  --surface: #151515;
+  --raised: #202020;
+  --line: #353535;
+  --ink: #f3f1ec;
+  --muted: #afaeaa;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font: 16px/1.55 system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--base);
+}
+body { margin: 0 }
+main { max-width: 96rem; margin: auto; padding: 0 clamp(1rem, 3vw, 3rem) 2.5rem }
+h1, h2, h3, p { margin: 0 }
+h1 { font-size: clamp(1.65rem, 3vw, 2.65rem); line-height: 1.18; letter-spacing: -.045em }
+h2 { font-size: 1.1rem }
+main > h1 + p, .catalog-intro p:last-child { margin: .6rem 0 1.2rem; max-width: 52em; color: var(--muted) }
+a { color: var(--ink); text-underline-offset: .22em }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+[hidden] { display: none !important }
+pre { overflow: auto; padding: .85rem; border-radius: .45rem; background: var(--base); font: .78rem/1.65 var(--mono) }
+button, input, select, textarea { box-sizing: border-box; max-width: 100%; font: inherit; accent-color: var(--ink) }
+button, select, input:is([type=text], [type=number], [type=search]), textarea, ::file-selector-button {
+  border: 1px solid #484848; border-radius: .45rem; background: var(--raised); color: var(--ink); padding: .4em .7em;
+}
+button, select, ::file-selector-button { cursor: pointer }
+button:disabled { cursor: default; opacity: .55 }
+button:enabled:hover, select:hover { border-color: #82817e }
+input[type=range] { cursor: pointer; margin-inline: 0 }
+input[type=checkbox] { inline-size: 1rem; block-size: 1rem; vertical-align: middle }
+.eyebrow, .demo-grid small, .catalog-heading span {
+  color: var(--muted); font: 600 .7rem/1.4 var(--mono); letter-spacing: .13em;
+}
+.eyebrow { margin: clamp(1rem, 2.5vw, 2rem) 0 .4rem }
+.masthead, .demo-nav { border-bottom: 1px solid var(--line); min-height: 3.4rem; display: flex; align-items: center }
+.masthead { justify-content: space-between }
+.masthead strong { font-size: .98rem; letter-spacing: -.025em }
+.masthead strong span { color: #777; padding: 0 .4rem }
+.masthead a, main > a, .catalog footer { font-size: .82rem; color: var(--muted) }
+.catalog { max-width: 79rem }
+.catalog-intro { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: clamp(1rem, 3vw, 2.5rem) 0; border-bottom: 1px solid var(--line) }
+.catalog-intro .eyebrow { margin: 0 0 .8rem }
+.catalog-intro h1 { font-size: clamp(2.4rem, 5vw, 4.4rem) }
+.catalog-intro p:last-child { margin-bottom: 0 }
+.dial { flex: none; width: clamp(8rem, 25vw, 22rem); color: #a6a49e }
+.catalog-heading { display: flex; align-items: baseline; justify-content: space-between; margin: 1.7rem 0 .8rem }
+.demo-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .65rem }
+.demo-grid a {
+  position: relative; display: flex; flex-direction: column; align-items: start; padding: clamp(.9rem,1.5vw,1.4rem);
+  border: 1px solid var(--line); border-radius: .75rem; text-decoration: none; background: var(--surface);
+}
+.demo-grid a:first-child { grid-column: span 2; background: linear-gradient(110deg,#282828,#191919) }
+.demo-grid a::after { content: "↗" / ""; position: absolute; top: .85rem; right: .95rem; color: var(--muted) }
+.demo-grid a:is(:hover,:focus-visible) { background: var(--raised); border-color: #858480 }
+.demo-grid h2 { margin: 1.5rem 0 .4rem; font-size: 1.12rem; line-height: 1.35 }
+.demo-grid p, .catalog footer { font-size: .86rem; color: var(--muted) }
+.catalog footer { margin-top: 1.5rem }
+.demo-nav { flex-wrap: wrap; gap: .2rem; padding: .4rem 0; box-sizing: border-box }
+.demo-nav a { padding: .4rem .75rem; color: var(--muted); border-radius: .4rem; text-decoration: none; font-size: .85rem }
+.demo-nav a:first-child { font-weight: 650; color: var(--ink) }
+.demo-nav a:hover, .demo-nav a[aria-current=page] { color: var(--ink); background: var(--raised) }
+
+.workbench { display: grid; grid-template-columns: minmax(0,2fr) minmax(19rem,1fr); gap: 1rem; align-items: start }
+.workbench > * { min-width: 0 }
+.demo-single:not(.settings-open) { grid-template-columns: minmax(0,1fr) }
+.workbench > section:first-child, #review-sidebar, #settings-panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: .85rem;
+}
+.workbench > section:first-child { padding: clamp(.6rem,1.3vw,1.15rem) }
+#review-sidebar, #settings-panel { padding: clamp(.8rem,1.4vw,1.2rem) }
+#review-sidebar > p, #review-sidebar details p { color: var(--muted); font-size: .88rem; margin: .7rem 0 }
+#review-sidebar summary { cursor: pointer }
+#stage { background: #080808; outline: 1px solid #ffffff18 }
+#stage.padview-surface { --ratio:1.33333333; --pv-board:75cqw; aspect-ratio:var(--ratio); max-width:min(100%,calc(80svh * var(--ratio))) }
+#stage[data-aspect="1:1"] { --ratio:1; --pv-board:100cqw }
+#stage[data-aspect="16:9"] { --ratio:1.77777778; --pv-board:56.25cqw }
+[data-example=transparent] #stage[data-backing=checker] { background: repeating-conic-gradient(#373737 0 25%,#262626 0 50%) 0 0/32px 32px }
+[data-example=transparent] #stage[data-backing=light] { background: #ededeb }
+[data-example=transparent] #stage[data-backing=dark] { background: #080808 }
+.aspect-control, #controls label, #imports label, #background label { color: var(--muted); font-size: .85rem }
+.aspect-control { display: inline-flex; align-items: center; gap: .55rem; margin: 0 0 .8rem }
+#imports, #controls, #background { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem .9rem; border: 0; padding: 0; min-width: 0; margin: 0 }
+#background, #imports { margin: .8rem 0 }
+#controls { margin: .85rem 0; padding-bottom: .8rem; border-bottom: 1px solid var(--line) }
+#controls label, #background label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .45rem }
+#background label { width: 100%; min-width: 0 }
+#controls label:has(#seek) { flex: 1 1 11rem }
+#seek { flex: 1; min-width: 3rem }
+#play { background: var(--ink); border-color: var(--ink); color: var(--base); font-weight: 700; min-width: 4.7rem }
+#play:enabled:hover { background: #fff }
+#time { font: .8rem var(--mono); font-variant-numeric: tabular-nums; color: var(--ink); min-width: 5.5em }
+#notice { margin: .7rem 0; color: var(--muted); font-size: .83rem }
+#settings-open { font-size: .88rem }
+#settings-warning { color: #f5c58e; font-size: .85rem }
+#settings-panel {
+  box-sizing: border-box; position: sticky; top: .5rem; height: calc(100dvh - 1rem);
+  display: flex; flex-direction: column; gap: .55rem; container: settings / inline-size; font-size: .875rem;
+}
+.settings-heading, .settings-filters label { display: flex; gap: .5rem; align-items: center; justify-content: space-between }
+.settings-filters input { flex: 1; min-width: 0 }
+#settings-panel > small, #settings-panel > label { color: var(--muted) }
+#settings-group, .settings-actions { display: flex; gap: .35rem; overflow-x: auto; scrollbar-width: thin; padding: 3px }
+#settings-group { margin-top: .4rem }
+#settings-group button, .settings-actions button { flex: none; font-size: .82rem }
+#settings-group [aria-pressed=true] { background: var(--ink); color: var(--base); border-color: var(--ink) }
+#settings-fields { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 2px }
+.settings-section, .viewer-component-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .5rem }
+.settings-section h3, .viewer-setting-components, .viewer-component-wide { grid-column: 1/-1 }
+.settings-section h3 { margin: .8rem 0 .2rem; font-size: .95rem }
+.viewer-setting, .viewer-component { min-width: 0; border: 1px solid var(--line); border-radius: .5rem; padding: .65rem; background: #1b1b1b }
+.viewer-setting { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .4rem; align-content: start; align-items: center }
+.viewer-setting input[type=number] { width: 5rem; font-family: var(--mono) }
+.viewer-setting input[type=checkbox] { justify-self: end }
+.viewer-setting > :is(input[type=range],input[type=text],.pv-setting-choice,small) { grid-column: 1/-1; width: 100%; min-width: 0 }
+.viewer-setting-components { display: block }
+.viewer-component { margin: .4rem 0 }
+.viewer-component summary { display: flex; align-items: center; gap: .35rem; cursor: pointer }
+.viewer-component summary span { flex: 1 }
+.viewer-component-fields { min-width: 0; margin: .5rem 0 0; padding: 0; border: 0 }
+.viewer-component-fields label { display: grid; min-width: 0; gap: .2rem }
+.viewer-component-fields :is(input:not([type=checkbox]),select,textarea) { width: 100%; min-width: 0 }
+#settings-status, .viewer-setting small, .viewer-components > p { margin: 0; color: var(--muted); font-size: .8rem }
+.overview-layout { grid-template-columns: minmax(0,3fr) minmax(0,2fr) }
+#overview-blocks .flow { grid-template-columns: repeat(auto-fit,minmax(min(100%,9rem),1fr)); gap: .5rem }
+#overview-blocks [data-block] { min-width: 0; padding: .5rem; border: 1px solid var(--line); background: #101010; border-radius: .45rem; overflow-wrap: anywhere }
+#overview-blocks [data-kind=pad_center] output { text-align: center }
+[data-example=labels] #stage [data-block="0"][data-kind=pad_center] { translate: 0 -50%; --pv-stat-layout: grid }
+@container settings (max-width: 26rem) { .settings-section { grid-template-columns: minmax(0,1fr) } }
+@media (max-width: 900px) { .demo-grid { grid-template-columns: repeat(2,minmax(0,1fr)) } }
+@media (max-width: 680px) {
+  .workbench { grid-template-columns: minmax(0,1fr) }
+  #settings-panel { position: relative; top: auto; height: 85dvh }
+  .demo-nav { gap: .1rem }
+  .demo-nav a { padding: .35rem .45rem }
+  .catalog-intro { display: grid; grid-template-columns: minmax(0,1fr) auto }
+  .catalog-intro > div { display: contents }
+  .catalog-intro .eyebrow { grid-area: 1/1; align-self: end; margin: 0 }
+  .catalog-intro h1 { grid-area: 2/1; align-self: start }
+  .catalog-intro p:last-child { grid-column: span 2; margin: 0 }
+  .dial { grid-area: 1/2/span 2; width: clamp(5rem,24vw,8rem) }
+}
+@media (max-width: 440px) {
+  .demo-grid { grid-template-columns: minmax(0,1fr) }
+  .demo-grid a:first-child { grid-column: auto }
+  .demo-grid h2 { margin-top: .55rem }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  #settings-panel { gap: .25rem; padding: .5rem }
+  #settings-status { max-height: 2.8em; overflow: auto }
+}
+
+.api-doc { max-width: 79rem }
+.api-grid { display: grid; grid-template-columns: 12rem minmax(0, 1fr); align-items: start; gap: clamp(1rem, 4vw, 4rem); border-top: 1px solid var(--line); padding-top: 1.5rem }
+.api-grid > nav { display: grid; position: sticky; top: 1rem; gap: .18rem }
+.api-grid > nav a { color: var(--muted); padding: .32rem .5rem; font-size: .88rem; text-decoration: none }
+.api-grid > nav a:hover, .api-grid > nav a:focus-visible { color: var(--ink); background: var(--raised) }
+.api-doc section { scroll-margin-top: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); overflow-wrap: anywhere }
+.api-doc section h2 { font-size: 1.45rem; margin-bottom: .8rem }
+.api-doc section p + p, .api-doc section pre { margin: .8rem 0 }
+.api-doc section pre { border: 1px solid var(--line); background: var(--surface); white-space: pre; overflow-wrap: normal }
+.api-doc dt { font-weight: 650; margin: 1.15rem 0 .25rem }
+.api-doc dd { color: #c4c4bf; margin: 0 }
+.api-doc code { font-family: var(--mono); font-size: .9em }
+.api-doc #api-filter { margin: .75rem .5rem .75rem 0 }
+.api-doc #api-fields details { border-top: 1px solid var(--line); padding: .55rem 0 }
+.api-doc summary { cursor: pointer; font-weight: 650 }
+.api-setting { display: grid; gap: .25rem; padding: .7rem .5rem; border-top: 1px solid var(--line) }
+.api-setting:first-of-type { margin-top: .6rem }
+.api-setting small, #api-count { color: var(--muted) }
+.api-option { display: inline-block; margin: .12rem .4rem .12rem 0; padding: .15rem .4rem; background: var(--surface); border-radius: .25rem; font-size: .85rem }
+@media (max-width: 680px) {
+  .api-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem }
+  .api-grid > nav { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}
