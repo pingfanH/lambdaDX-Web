@@ -24,7 +24,9 @@
 | `assetPack` | 基础素材（Brotli） | 适用场景 |
 | --- | --- | --- |
 | `player` | `assets-player.tar.br` | 完整手动判定和自动演奏；可选皮肤按需下载；原项目还提供额外音色和字体 |
-| `viewer`（默认） | `assets-viewer.tar.br` | 自动预览；含默认音符、外框、中心 HUD、成功判定与击打音（含烟花）。省去其他判定、非默认特效和手动游玩音色，HTML 使用系统字体 |
+| `viewer`（默认） | `assets-viewer.tar.br` | 自动预览；含音符、外框、中心 HUD、成功判定与击打音（含烟花）。省去其他判定和手动游玩音色，HTML 使用系统字体 |
+
+第三方 `ldx-web` 的两个基础包都内置全部 Note 设计及对应特效。切换 Tap、Hold、Slide 或星星颜色不会触发下载；非默认外框和 FiNALE 判定等仍需部署对应的可选包。
 
 ```js
 import {mountPadview} from '/padview/embed.js';

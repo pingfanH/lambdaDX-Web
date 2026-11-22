@@ -3,7 +3,12 @@
 // The build writes regular files in a deterministic USTAR archive. HTTP
 // Content-Encoding handles Brotli before these bytes reach the parser.
 globalThis.PadviewAssets = class PadviewAssets {
-  constructor(files) { this.files = files; this.packs = new Map(); this.loadedPacks = new Set(); }
+  constructor(files) {
+    this.files = files;
+    this.packs = new Map();
+    const profile = files.get('padview_profile.json');
+    this.loadedPacks = new Set(profile ? JSON.parse(new TextDecoder().decode(profile)).bundled_packs : []);
+  }
 
   get(name) { return this.files.get(name.replace(/^(\.\/)+/, '')); }
 
@@ -41,6 +46,7 @@ globalThis.PadviewAssets = class PadviewAssets {
   }
 
   async loadPacks(names, fetcher = fetch) {
+    names = [...new Set(names)].filter(name => !this.loadedPacks.has(name));
     if (!names.length) return { files: new Map(), flags: 0 };
     const version = globalThis.document?.querySelector('meta[name="padview-build"]')?.content || 'native3';
     this.options ||= fetcher('options.json?v=' + encodeURIComponent(version), { cache: 'no-cache' }).then(async response => {
@@ -48,7 +54,7 @@ globalThis.PadviewAssets = class PadviewAssets {
       return response.json();
     }).catch(error => { this.options = null; throw error; });
     const options = await this.options;
-    const results = await Promise.all([...new Set(names)].map(async name => {
+    const results = await Promise.all(names.map(async name => {
       if (this.packs.has(name)) { const result = await this.packs.get(name); return this.loadedPacks.has(name) ? null : { ...result, name }; }
       const option = options[name];
       if (!option || !/^options\/[a-z0-9-]+\.tar\.br$/.test(option.url)) throw new Error('缺少可选资源：' + name);

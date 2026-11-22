@@ -26,7 +26,7 @@ view.setTime(2, {seek: true});
 &lt;/script&gt;</code></pre></section>
 <section id="mount"><h2>02　挂载、资源包与多盘面</h2>
 <p><code>mountPadview(element, options?) → PadviewController</code> 同步返回控制器，也可通过 <code>element.padview</code> 取得。每份文档挂一个主盘面；对比盘面共享 WASM、WebGL 和素材，独立载谱、进度和输出。声音和手动判定只属于主盘面。宿主 CSS 决定显示尺寸；盘面保持正方形，示例容器默认 4:3，可选 1:1 或 16:9。</p>
-<dl><dt>assetPack</dt><dd><code>'viewer'</code>（默认）：自动预览、默认击打音和 HUD，使用较小的 <code>assets-viewer.tar.br</code>。<code>'player'</code>：完整游玩、手动判定和素材。第三方 SDK 使用默认音色和系统字体，音符皮肤和外框可按需加载。可用资源见 <a href="../options.json">可选包清单</a>。同页不能热换基础包，请重新打开页面。</dd>
+<dl><dt>assetPack</dt><dd><code>'viewer'</code>（默认）：自动预览、默认击打音和 HUD，使用较小的 <code>assets-viewer.tar.br</code>。<code>'player'</code>：完整游玩与手动判定。第三方 SDK 的两个基础包都内置所有音符皮肤及配套特效，使用默认音色和系统字体。外框和 FiNALE 资源按需加载，见<a href="../options.json">可选包清单</a>。同页不能热换基础包，请重新打开页面。</dd>
 <dt>comparison</dt><dd>默认 false；对比盘面传 true，使用主盘面的引擎和资源包。</dd>
 <dt>transparent / blocksContainer</dt><dd>主布局默认透明叠加（URL <code>transparent=0</code> 改为分区）。传 <code>blocksContainer: HTMLElement</code> 把只读 HTML 信息放到指定容器，默认 null。</dd>
 <dt>hudChannel</dt><dd>主盘面取 URL 的 hud，默认 <code>'stage'</code>；对比盘面默认空字符串。显式传空字符串可关闭频道。见<a href="#hud">独立 HUD</a>。</dd>
